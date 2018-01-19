@@ -68,12 +68,6 @@ class PhotoImporter(QObject):
         self.append = append
 
     def importPhotos(self):
-        if exifread.__version__ == "2.0.0":
-            self.importError.emit(
-                self.tr("Found exifread {}, but plugin requires exifread "
-                        "1.x or >= 2.0.1.".format(exifread.__version__)))
-            return
-
         if self.append:
             layer = self._openShapefile()
         else:
@@ -94,7 +88,7 @@ class PhotoImporter(QObject):
                 break
 
         if len(photos) == 0:
-            self.importError.emit(self.tr("No images found in directory."))
+            self.importError.emit(self.tr("No images found in the directory."))
             return
 
         total = 100.0 / len(photos)

@@ -56,7 +56,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
 
         self.fwOutputShape.setStorageMode(QgsFileWidget.SaveFile)
         self.fwOutputShape.setConfirmOverwrite(True)
-        self.fwOutputShape.setDialogTitle(self.tr("Select directory"))
+        self.fwOutputShape.setDialogTitle(self.tr("Select file"))
         self.fwOutputShape.setDefaultRoot(self.settings.value("lastShapeDirectory", QgsProject.instance().homePath(), str))
         self.fwOutputShape.setFilter(self.tr("ESRI Shapefile (*.shp *.SHP)"))
         self.fwOutputShape.fileChanged.connect(self.updateLastShapePath)
@@ -107,7 +107,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
         dirName = self.fwPhotosPath.filePath()
         if dirName == '':
             self.iface.messageBar().pushWarning(
-                self.tr("Path not set"),
+                self.tr("Path is not set"),
                 self.tr("Path to photos is not set. Please specify directory "
                         "with photos and try again."))
             return
@@ -153,7 +153,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
     def importCompleted(self):
         self.iface.messageBar().pushSuccess(
             self.tr("Import completed"),
-            self.tr("Shapefile from photos sucessfully created"))
+            self.tr("Photos imported sucessfully."))
         if self.chkLoadLayer.isChecked():
             self._loadLayer()
 
@@ -170,7 +170,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
         else:
             self.iface.messageBar().pushWarning(
                 self.tr("No output"),
-                self.tr("Cannot load output shapefile"))
+                self.tr("Can not load output file."))
 
     def _restoreGui(self):
         self.progressBar.setValue(0)
