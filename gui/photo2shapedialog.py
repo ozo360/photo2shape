@@ -28,11 +28,11 @@ __revision__ = '$Format:%H$'
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QThread, QFileInfo
-from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox, QFileDialog
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
 
 from qgis.core import QgsSettings, QgsVectorLayer, QgsProject, QgsMessageLog
-from qgis.gui import QgsEncodingFileDialog
+from qgis.gui import QgsFileWidget
 
 from photo2shape.photoimporter import PhotoImporter
 
@@ -49,14 +49,23 @@ class Photo2ShapeDialog(BASE, WIDGET):
 
         self.settings = QgsSettings("alexbruy", "photo2shape")
 
+        self.fwPhotosPath.setStorageMode(QgsFileWidget.GetDirectory)
+        self.fwPhotosPath.setDialogTitle(self.tr("Select directory"))
+        self.fwPhotosPath.setDefaultRoot(self.settings.value("lastPhotosDirectory", os.path.expanduser("~"), str))
+        self.fwPhotosPath.fileChanged.connect(self.updateLastPhotosPath)
+
+        self.fwOutputShape.setStorageMode(QgsFileWidget.SaveFile)
+        self.fwOutputShape.setConfirmOverwrite(True)
+        self.fwOutputShape.setDialogTitle(self.tr("Select directory"))
+        self.fwOutputShape.setDefaultRoot(self.settings.value("lastShapeDirectory", QgsProject.instance().homePath(), str))
+        self.fwOutputShape.setFilter(self.tr("ESRI Shapefile (*.shp *.SHP)"))
+        self.fwOutputShape.fileChanged.connect(self.updateLastShapePath)
+
         self.thread = QThread()
         self.importer = PhotoImporter()
 
         self.btnOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.btnClose = self.buttonBox.button(QDialogButtonBox.Close)
-
-        self.btnSelectInput.clicked.connect(self.selectDirectory)
-        self.btnSelectOutput.clicked.connect(self.selectFile)
 
         self.importer.moveToThread(self.thread)
         self.importer.importError.connect(self.thread.quit)
@@ -80,38 +89,13 @@ class Photo2ShapeDialog(BASE, WIDGET):
         self._saveSettings()
         QDialog.closeEvent(self, event)
 
-    def selectDirectory(self):
-        lastDir = self.settings.value("lastPhotosDir", ".", str)
-        dirName = QFileDialog.getExistingDirectory(
-            self, self.tr("Select directory"), lastDir)
+    def updateLastPhotosPath(self, dirPath):
+        self.fwPhotosPath.setDefaultRoot(dirPath)
+        self.settings.setValue("lastPhotosDirectory", os.path.dirname(dirPath))
 
-        if dirName == "":
-            return
-
-        self.lePhotosPath.setText(dirName)
-        self.settings.setValue("lastPhotosDir", os.path.dirname(dirName))
-
-    def selectFile(self):
-        lastDir = self.settings.value("lastShapeDir", ".", str)
-        shpFilter = self.tr("ESRI Shapefiles (*.shp *.SHP)")
-        self.encoding = self.settings.value("encoding", "utf-8", str)
-
-        fileDialog = QgsEncodingFileDialog(
-            self, self.tr("Save file"), lastDir, shpFilter, self.encoding)
-
-        fileDialog.setDefaultSuffix("shp")
-        fileDialog.setFileMode(QFileDialog.AnyFile)
-        fileDialog.setAcceptMode(QFileDialog.AcceptSave)
-        #fileDialog.setConfirmOverwrite(True)
-
-        if fileDialog.exec_():
-            fileName = fileDialog.selectedFiles()[0]
-            self.encoding = fileDialog.encoding()
-
-            self.leOutputShape.setText(fileName)
-            self.settings.setValue("lastShapeDir",
-                QFileInfo(fileName).absoluteDir().absolutePath())
-            self.settings.setValue("encoding", self.encoding)
+    def updateLastShapePath(self, shapePath):
+        self.fwOutputShape.setDefaultRoot(shapePath)
+        self.settings.setValue("lastShapeDirectory", os.path.basename(shapePath))
 
     def reject(self):
         self._saveSettings()
@@ -120,7 +104,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
     def accept(self):
         self._saveSettings()
 
-        dirName = self.lePhotosPath.text()
+        dirName = self.fwPhotosPath.filePath()
         if dirName == '':
             self.iface.messageBar().pushWarning(
                 self.tr("Path not set"),
@@ -128,18 +112,13 @@ class Photo2ShapeDialog(BASE, WIDGET):
                         "with photos and try again."))
             return
 
-        fileName = self.leOutputShape.text()
+        fileName = self.fwOutputShape.filePath()
         if fileName == "":
             self.iface.messageBar().pushWarning(
                 self.tr("Output file is not set"),
                 self.tr("Output file name is missing. Please specify correct "
                         "output file and try again."))
             return
-
-        # make sure output file always has correct suffix
-        if not fileName.lower().endswith(".shp"):
-            fileName += ".shp"
-            self.leOutputShape.setText(fileName)
 
         if self.chkAppend.isChecked() and not os.path.isfile(fileName):
             self.iface.messageBar().pushWarning(
@@ -181,8 +160,8 @@ class Photo2ShapeDialog(BASE, WIDGET):
         self._restoreGui()
 
     def _loadLayer(self):
-        fName = self.leOutputShape.text()
-        layer = QgsVectorLayer(fName, QFileInfo(fName).baseName(), "ogr")
+        fName = self.fwOutputShape.filePath()
+        layer = QgsVectorLayer(fName, os.path.basename(fName), "ogr")
 
         if layer.isValid():
             layer.loadNamedStyle(

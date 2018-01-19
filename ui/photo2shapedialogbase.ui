@@ -14,10 +14,16 @@
    <string>Photo2Shape</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="2">
-    <widget class="QPushButton" name="btnSelectInput">
+   <item row="0" column="1" colspan="2">
+    <widget class="QgsFileWidget" name="fwPhotosPath" native="true"/>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QgsFileWidget" name="fwOutputShape" native="true"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QCheckBox" name="chkAppend">
      <property name="text">
-      <string>Browse...</string>
+      <string>Append to existing file</string>
      </property>
     </widget>
    </item>
@@ -28,17 +34,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="btnSelectOutput">
-     <property name="text">
-      <string>Browse...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="leOutputShape"/>
-   </item>
-   <item row="3" column="0" colspan="3">
+   <item row="5" column="0" colspan="3">
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>0</number>
@@ -52,16 +48,6 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lePhotosPath"/>
-   </item>
-   <item row="5" column="0" colspan="3">
-    <widget class="QCheckBox" name="chkLoadLayer">
-     <property name="text">
-      <string>Add result to canvas</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0" colspan="3">
     <widget class="QCheckBox" name="chkRecurse">
      <property name="text">
@@ -69,14 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="QCheckBox" name="chkAppend">
-     <property name="text">
-      <string>Append to existing file</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0" colspan="3">
+   <item row="9" column="0" colspan="3">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -86,8 +65,23 @@
      </property>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="chkLoadLayer">
+     <property name="text">
+      <string>Add result to canvas</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">qgis.gui</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
