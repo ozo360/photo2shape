@@ -95,7 +95,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
 
     def updateLastShapePath(self, shapePath):
         self.fwOutputShape.setDefaultRoot(shapePath)
-        self.settings.setValue("lastShapeDirectory", os.path.basename(shapePath))
+        self.settings.setValue("lastShapeDirectory", os.path.dirname(shapePath))
 
     def reject(self):
         self._saveSettings()
