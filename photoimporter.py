@@ -131,7 +131,6 @@ class PhotoImporter(QObject):
             ft.setGeometry(
                 QgsGeometry.fromPointXY(QgsPointXY(longitude, latitude)))
             ft["filepath"] = fName
-            ft["filename"] = os.path.basename(fName)
             ft["longitude"] = longitude
             ft["latitude"] = latitude
             ft["altitude"] = altitude
@@ -153,7 +152,6 @@ class PhotoImporter(QObject):
     def _newShapefile(self):
         fields = QgsFields()
         fields.append(QgsField("filepath", QVariant.String, '', 254))
-        fields.append(QgsField("filename", QVariant.String, '', 254))
         fields.append(QgsField("longitude", QVariant.Double, '', 20, 7))
         fields.append(QgsField("latitude", QVariant.Double, '', 20, 7))
         fields.append(QgsField("altitude", QVariant.Double, '', 20, 7))
