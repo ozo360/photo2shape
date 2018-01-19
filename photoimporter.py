@@ -29,14 +29,14 @@ import os
 
 import exifread
 
-from qgis.PyQt.QtCore import pyqtSignal, QObject, QVariant, QFileInfo
+from qgis.PyQt.QtCore import pyqtSignal, QObject, QVariant
 
 from qgis.core import (QgsWkbTypes,
                        QgsFeature,
                        QgsFields,
                        QgsField,
                        QgsGeometry,
-                       QgsPointXY,
+                       QgsPoint,
                        QgsVectorLayer,
                        QgsVectorFileWriter,
                        QgsCoordinateReferenceSystem)
@@ -57,6 +57,7 @@ class PhotoImporter(QObject):
 
     def setOutputPath(self, filePath):
         self.shapePath = filePath
+        self.fileName = os.path.splitext(os.path.basename(filePath))[0]
 
     def setEncoding(self, encoding):
         self.encoding = encoding
@@ -122,8 +123,8 @@ class PhotoImporter(QObject):
             del tags
 
             # Write feature to layer
-            ft.setGeometry(
-                QgsGeometry.fromPointXY(QgsPointXY(longitude, latitude)))
+            z = altitude if altitude is not None else 0.0
+            ft.setGeometry(QgsGeometry(QgsPoint(longitude, latitude, z)))
             ft["filepath"] = fName
             ft["longitude"] = longitude
             ft["latitude"] = latitude
@@ -138,8 +139,14 @@ class PhotoImporter(QObject):
         self.importFinished.emit()
 
     def _openShapefile(self):
-        layer = QgsVectorLayer(
-            self.shapePath, QFileInfo(self.shapePath).baseName(), "ogr")
+        layer = QgsVectorLayer(self.shapePath, self.fileName, "ogr")
+
+        wkbType = layer.wkbType()
+        if wkbType != QgsWkbTypes.PointZ:
+            self.importError.emit(
+                self.tr("File has incorrect WKB type '{}'. Please select layer "
+                        "with 'PointZ' WKB type.".format(QgsWkbTypes.displayString(wkbType))))
+            return None
 
         return layer
 
@@ -156,11 +163,10 @@ class PhotoImporter(QObject):
 
         crs = QgsCoordinateReferenceSystem(4326)
         writer = QgsVectorFileWriter(
-            self.shapePath, self.encoding, fields, QgsWkbTypes.Point, crs, driverName="ESRI Shapefile")
+            self.shapePath, self.encoding, fields, QgsWkbTypes.PointZ, crs, driverName="ESRI Shapefile")
         del writer
 
-        layer = QgsVectorLayer(
-            self.shapePath, QFileInfo(self.shapePath).baseName(), "ogr")
+        layer = QgsVectorLayer(self.shapePath, self.fileName, "ogr")
 
         return layer
 
