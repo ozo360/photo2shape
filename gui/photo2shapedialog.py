@@ -78,9 +78,6 @@ class Photo2ShapeDialog(BASE, WIDGET):
         self.thread.started.connect(self.importer.importPhotos)
 
         self.encoding = self.settings.value("encoding", "utf-8", str)
-        self.manageGui()
-
-    def manageGui(self):
         self.chkRecurse.setChecked(self.settings.value("recurse", True, bool))
         self.chkAppend.setChecked(self.settings.value("append", True, bool))
         self.chkLoadLayer.setChecked(self.settings.value("loadLayer", True, bool))
