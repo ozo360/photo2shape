@@ -31,7 +31,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QThread
 from qgis.PyQt.QtWidgets import QDialog, QDialogButtonBox
 
-from qgis.core import QgsSettings, QgsVectorLayer, QgsProject, QgsMessageLog
+from qgis.core import Qgis, QgsSettings, QgsVectorLayer, QgsProject, QgsMessageLog
 from qgis.gui import QgsFileWidget
 
 from photo2shape.photoimporter import PhotoImporter
@@ -139,7 +139,7 @@ class Photo2ShapeDialog(BASE, WIDGET):
     def updateProgress(self, value):
         self.progressBar.setValue(value)
 
-    def logMessage(self, message, level=QgsMessageLog.INFO):
+    def logMessage(self, message, level=Qgis.Info):
         QgsMessageLog.logMessage(message, "Photo2Shape", level)
 
     def importCanceled(self, message):
